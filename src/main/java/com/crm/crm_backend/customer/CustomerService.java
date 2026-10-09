@@ -37,7 +37,7 @@ public class CustomerService {
         return customerRepository.save(customer);
     }
 
-    
+
 
 public Page<Customer> getCustomers(
         int page,
@@ -79,7 +79,33 @@ public Page<Customer> searchCustomers(
                     pageable);
 }
 
-    
+
+public Page<Customer> filterCustomers(
+        String name,
+        String email,
+        int page,
+        int size,
+        String sortBy,
+        String direction) {
+
+    Long tenantId = requireTenantId();
+
+    Pageable pageable = createPageable(
+            page, size, sortBy, direction);
+
+    String nameFilter =
+        (name == null || name.isBlank()) ? "" : name.trim();
+
+String emailFilter =
+        (email == null || email.isBlank()) ? "" : email.trim();
+
+    return customerRepository.filterCustomers(
+            tenantId,
+            nameFilter,
+            emailFilter,
+            pageable);
+}
+
 private Pageable createPageable(
         int page,
         int size,
@@ -175,8 +201,13 @@ public Customer getCustomerById1(Long customerId) {
         return tenantId;
     }
 
-    public Customer getCustomerById(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getCustomerById'");
-    }
+   public Customer getCustomerById(Long id) {
+    Long tenantId = requireTenantId();
+
+    return customerRepository
+            .findByIdAndTenant_Id(id, tenantId)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Customer not found"));
+}
 }

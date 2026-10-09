@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
+
 @RestController
 @RequestMapping("/api/customers")
 public class CustomerController {
@@ -60,4 +61,18 @@ public class CustomerController {
     public void deleteCustomer(@PathVariable Long id) {
         customerService.deleteCustomer(id);
     }
+
+@GetMapping("/filter")
+public Page<Customer> filterCustomers(
+        @RequestParam(required = false) String name,
+        @RequestParam(required = false) String email,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "id") String sortBy,
+        @RequestParam(defaultValue = "desc") String direction) {
+
+    return customerService.filterCustomers(
+            name, email, page, size, sortBy, direction);
+}
+
 }
