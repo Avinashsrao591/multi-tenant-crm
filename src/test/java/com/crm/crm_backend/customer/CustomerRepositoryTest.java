@@ -5,10 +5,11 @@ import com.crm.crm_backend.tenant.Tenant;
 import com.crm.crm_backend.tenant.TenantRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.data.domain.PageRequest;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(
@@ -37,15 +38,20 @@ class CustomerRepositoryTest {
 
         Customer savedCustomer = customerRepository.save(customer);
 
+        // Tenant B cannot retrieve Tenant A's customer by ID.
         assertThat(
                 customerRepository.findByIdAndTenant_Id(
                         savedCustomer.getId(), tenantB.getId()))
                 .isEmpty();
 
+        // Tenant B's paginated results must not contain Tenant A's customer.
         assertThat(
-                customerRepository.findAllByTenant_Id(tenantB.getId()))
+                customerRepository.findAllByTenant_Id(
+                        tenantB.getId(), PageRequest.of(0, 10))
+                        .getContent())
                 .isEmpty();
 
+        // Tenant A can retrieve its own customer.
         assertThat(
                 customerRepository.findByIdAndTenant_Id(
                         savedCustomer.getId(), tenantA.getId()))

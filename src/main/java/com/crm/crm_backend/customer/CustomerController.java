@@ -1,11 +1,9 @@
 
 package com.crm.crm_backend.customer;
 
-import org.springframework.web.bind.annotation.*;
-
 import jakarta.validation.Valid;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/customers")
@@ -17,32 +15,43 @@ public class CustomerController {
         this.customerService = customerService;
     }
 
-  @PostMapping
-public Customer createCustomer(
-        @Valid @RequestBody Customer customer) {
-    return customerService.createCustomer(customer);
-}
+    @PostMapping
+    public Customer createCustomer(
+            @Valid @RequestBody Customer customer) {
+        return customerService.createCustomer(customer);
+    }
+
     @GetMapping
-    public List<Customer> getCustomers() {
-        return customerService.getCustomers();
+    public Page<Customer> getCustomers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        return customerService.getCustomers(page, size);
+    }
+
+    @GetMapping("/search")
+    public Page<Customer> searchCustomers(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        return customerService.searchCustomers(keyword, page, size);
     }
 
     @GetMapping("/{id}")
-    public Customer getCustomerById(
-            @PathVariable Long id) {
+    public Customer getCustomerById(@PathVariable Long id) {
         return customerService.getCustomerById(id);
     }
-    
-@PutMapping("/{id}")
-public Customer updateCustomer(
-        @PathVariable Long id,
-        @Valid @RequestBody Customer customer) {
-    return customerService.updateCustomer(id, customer);
-}
 
-@DeleteMapping("/{id}")
-public void deleteCustomer(@PathVariable Long id) {
-    customerService.deleteCustomer(id);
-}
+    @PutMapping("/{id}")
+    public Customer updateCustomer(
+            @PathVariable Long id,
+            @Valid @RequestBody Customer customer) {
+        return customerService.updateCustomer(id, customer);
+    }
 
+    @DeleteMapping("/{id}")
+    public void deleteCustomer(@PathVariable Long id) {
+        customerService.deleteCustomer(id);
+    }
 }

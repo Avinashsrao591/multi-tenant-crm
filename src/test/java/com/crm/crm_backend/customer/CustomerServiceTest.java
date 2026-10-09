@@ -1,6 +1,5 @@
-
 package com.crm.crm_backend.customer;
-
+import org.springframework.data.domain.PageRequest;
 import com.crm.crm_backend.security.TenantContext;
 import com.crm.crm_backend.tenant.TenantRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -16,8 +15,11 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("unused")
 @ExtendWith(MockitoExtension.class)
 class CustomerServiceTest {
 
@@ -81,11 +83,12 @@ class CustomerServiceTest {
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
-                () -> customerService.getCustomers()
+                () -> customerService.getCustomers(0,10)
         );
 
         assertEquals(401, exception.getStatusCode().value());
 
-        verify(customerRepository, never()).findAllByTenant_Id(anyLong());
+        verify(customerRepository, never())
+        .findAllByTenant_Id(anyLong(), any(org.springframework.data.domain.Pageable.class));
     }
 }
