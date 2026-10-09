@@ -25,19 +25,18 @@ public class AuthController {
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
-
     @PostMapping("/login")
-    public LoginResponse login(
-            @RequestBody LoginRequest request) {
+    public LoginResponse login(@RequestBody LoginRequest request) {
 
-        User user = userRepository.findByEmail(request.getEmail())
+        String email = request.getEmail();
+
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() ->
                         new RuntimeException("Invalid email or password"));
 
         if (!passwordEncoder.matches(
                 request.getPassword(),
                 user.getPassword())) {
-
             throw new RuntimeException("Invalid email or password");
         }
 
