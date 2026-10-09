@@ -24,18 +24,24 @@ public class CustomerController {
     @GetMapping
     public Page<Customer> getCustomers(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
 
-        return customerService.getCustomers(page, size);
+        return customerService.getCustomers(
+                page, size, sortBy, direction);
     }
 
     @GetMapping("/search")
     public Page<Customer> searchCustomers(
             @RequestParam String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
 
-        return customerService.searchCustomers(keyword, page, size);
+        return customerService.searchCustomers(
+                keyword, page, size, sortBy, direction);
     }
 
     @GetMapping("/{id}")

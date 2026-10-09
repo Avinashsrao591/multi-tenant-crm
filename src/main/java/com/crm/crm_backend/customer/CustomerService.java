@@ -37,59 +37,103 @@ public class CustomerService {
         return customerRepository.save(customer);
     }
 
-    public Page<Customer> getCustomers(int page, int size) {
-        Long tenantId = requireTenantId();
-        Pageable pageable = createPageable(page, size);
+    
 
+public Page<Customer> getCustomers(
+        int page,
+        int size,
+        String sortBy,
+        String direction) {
+
+    Long tenantId = requireTenantId();
+
+    Pageable pageable = createPageable(
+            page, size, sortBy, direction);
+
+    return customerRepository.findAllByTenant_Id(
+            tenantId, pageable);
+}
+
+
+public Page<Customer> searchCustomers(
+        String keyword,
+        int page,
+        int size,
+        String sortBy,
+        String direction) {
+
+    Long tenantId = requireTenantId();
+    Pageable pageable = createPageable(page, size, sortBy, direction);
+
+    if (keyword == null || keyword.isBlank()) {
         return customerRepository.findAllByTenant_Id(
                 tenantId, pageable);
     }
 
-    public Page<Customer> searchCustomers(
-            String keyword, int page, int size) {
+    return customerRepository
+            .findByTenant_IdAndNameContainingIgnoreCaseOrTenant_IdAndEmailContainingIgnoreCase(
+                    tenantId,
+                    keyword.trim(),
+                    tenantId,
+                    keyword.trim(),
+                    pageable);
+}
 
-        Long tenantId = requireTenantId();
-        Pageable pageable = createPageable(page, size);
+    
+private Pageable createPageable(
+        int page,
+        int size,
+        String sortBy,
+        String direction) {
 
-        if (keyword == null || keyword.isBlank()) {
-            return customerRepository.findAllByTenant_Id(
-                    tenantId, pageable);
-        }
-
-        return customerRepository
-                .findByTenant_IdAndNameContainingIgnoreCaseOrTenant_IdAndEmailContainingIgnoreCase(
-                        tenantId,
-                        keyword.trim(),
-                        tenantId,
-                        keyword.trim(),
-                        pageable);
+    if (page < 0) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Page number cannot be negative");
     }
 
-    private Pageable createPageable(int page, int size) {
-        if (page < 0) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Page number cannot be negative");
-        }
-
-        if (size < 1 || size > 100) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Page size must be between 1 and 100");
-        }
-
-        return PageRequest.of(
-                page, size, Sort.by("id").descending());
+    if (size < 1 || size > 100) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Page size must be between 1 and 100");
     }
 
-    public Customer getCustomerById(Long customerId) {
-        Long tenantId = requireTenantId();
-
-        return customerRepository
-                .findByIdAndTenant_Id(customerId, tenantId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Customer not found"));
+    if (sortBy == null ||
+            !java.util.Set.of("id", "name", "email", "phone")
+                    .contains(sortBy)) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Invalid sort field. Allowed fields: id, name, email, phone");
     }
+
+    Sort.Direction sortDirection;
+
+    try {
+        sortDirection = Sort.Direction.fromString(direction);
+    } catch (IllegalArgumentException | NullPointerException exception) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Sort direction must be asc or desc");
+    }
+
+    Pageable pageable = PageRequest.of(
+            page,
+            size,
+            Sort.by(sortDirection, sortBy));
+
+    return pageable;
+}
+
+public Customer getCustomerById1(Long customerId) {
+    Long tenantId = requireTenantId();
+
+    return customerRepository
+            .findByIdAndTenant_Id(customerId, tenantId)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Customer not found"));
+}
+
 
     public Customer updateCustomer(
             Long customerId, Customer updatedCustomer) {
@@ -129,5 +173,10 @@ public class CustomerService {
         }
 
         return tenantId;
+    }
+
+    public Customer getCustomerById(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getCustomerById'");
     }
 }

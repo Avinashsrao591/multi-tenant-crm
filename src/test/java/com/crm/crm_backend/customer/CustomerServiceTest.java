@@ -83,7 +83,7 @@ class CustomerServiceTest {
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
-                () -> customerService.getCustomers(0,10)
+                () -> customerService.getCustomers(0, 10, "id", "desc")
         );
 
         assertEquals(401, exception.getStatusCode().value());
